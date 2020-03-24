@@ -1,7 +1,6 @@
 import requests
 import re
 
-
 def getHTMLText(url):
     try:
         r = requests.get(url, timeout = 30)
