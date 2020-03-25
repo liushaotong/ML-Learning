@@ -1,6 +1,7 @@
 import requests
 import re
 import os
+from bs4 import BeautifulSoup
 
 def getHTMLText(url):
     try:
@@ -20,14 +21,27 @@ def getHTMLResponse(url):
         return ""
 
 
+#改用bs4解析找href 拼接一下，再把所有的url存起来
+def parsePageFirst(hrefList, html, url):
+    soup = BeautifulSoup(html, "html.parser")
+    hlist = soup.find_all("a", class_= "gallerythumb")
+    for x in hlist:
+        hrefList.append(url + x.get('href'))
+
+
 def parsePage(itemList, html):
     try:
-        p = r'<img src="([^"]+t\.jpg)"'
+        p = r'<img src="([^"]+\.jpg)"'
         img_address = re.findall(p, html)
-        for i in range(len(img_address)):
-            itemList.append(img_address[i])
+        itemList.append(img_address[0])
     except:
         print("")
+
+
+def parsePageSecond(imgList, hrefList):
+    for i in hrefList:
+        html = getHTMLText(i)
+        parsePage(imgList, html)
 
 
 def saveImg(itemList, dirName):
@@ -45,10 +59,14 @@ def saveImg(itemList, dirName):
 
 def main():
     url = 'https://nhentai.net/g/231690/'
-    dirName = '并非我的恋人'
+    url_home = 'https://nhentai.net'
+    dirName = '并非我的恋人大图'
+    hrefList = []
     imgList = []
     html = getHTMLText(url)
-    parsePage(imgList, html)
+    parsePageFirst(hrefList, html, url_home)
+    parsePageSecond(imgList, hrefList)
+    print(imgList)
     saveImg(imgList, dirName)
 
 
